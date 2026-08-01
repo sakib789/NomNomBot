@@ -7,12 +7,32 @@ Runs entirely on GitHub Actions cron — no server, no always-on process, free.
 
 ```
 17:00  →  🍛 Lunch tomorrow?   React ✅ Yes / ❌ No
+          Bringing guests? Also tap a number: 1️⃣2️⃣3️⃣
+
           🍽️ Dinner tomorrow?  React ✅ Yes / ❌ No
+          Bringing guests? Also tap a number: 1️⃣2️⃣3️⃣
 
 10:00  →  Meal count for today
-          🍛 Lunch: 3 Yes, 1 No
-          🍽️ Dinner: 2 Yes, 2 No
+          🍛 Lunch: 3 Yes, 1 No, +2 guests → 5 meals
+          🍽️ Dinner: 2 Yes, 2 No → 2 meals
+
+          📊 Total meals to cook: 7
 ```
+
+## Guest meals
+
+Alongside ✅/❌, each prompt carries number reactions. The rule is
+**(people who tapped an emoji) × (that emoji's value)**, summed:
+
+| Reactions | Guest meals |
+| --- | --- |
+| 1 person taps 1️⃣ | 1 |
+| 2 people tap 1️⃣ | 2 |
+| 3 people tap 2️⃣ | 6 |
+| 2 tap 1️⃣ and 1 taps 3️⃣ | 5 |
+
+Total meals for a sitting = ✅ count + guest meals. To offer bigger numbers, add
+entries to `GUEST_OPTIONS` in `src/constants.js`.
 
 ---
 

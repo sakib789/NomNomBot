@@ -1,17 +1,27 @@
 import { postMessage, addReaction } from './discord.js';
 import { ensureTabs, setState } from './sheets.js';
-import { YES, NO } from './constants.js';
+import { YES, NO, GUEST_OPTIONS } from './constants.js';
+
+const guestLegend = GUEST_OPTIONS.map((g) => g.emoji).join('');
+
+const prompt = (meal, icon) =>
+  `${icon} **${meal} tomorrow?**  React ${YES} Yes / ${NO} No\n` +
+  `_Bringing guests? Also tap a number: ${guestLegend} (each = that many extra meals)_`;
 
 async function main() {
   await ensureTabs();
 
-  const lunch = await postMessage(`🍛 **Lunch tomorrow?**  React ${YES} Yes / ${NO} No`);
-  const dinner = await postMessage(`🍽️ **Dinner tomorrow?**  React ${YES} Yes / ${NO} No`);
+  const lunch = await postMessage(prompt('Lunch', '🍛'));
+  const dinner = await postMessage(prompt('Dinner', '🍽️'));
 
-  // Seed both reactions so people just tap instead of hunting for the emoji.
+  // Seed every reaction so people just tap instead of hunting for emoji.
+  // Order matters — this is the order they appear under the message.
   for (const message of [lunch, dinner]) {
     await addReaction(message.id, YES);
     await addReaction(message.id, NO);
+    for (const { emoji } of GUEST_OPTIONS) {
+      await addReaction(message.id, emoji);
+    }
   }
 
   await setState({

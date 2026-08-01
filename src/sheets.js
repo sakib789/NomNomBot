@@ -4,8 +4,13 @@ import { requireEnv } from './discord.js';
 const SHEET_ID = requireEnv('GOOGLE_SHEET_ID');
 
 const TABS = {
-  Meals: ['Logged at', 'Lunch Yes', 'Lunch No', 'Dinner Yes', 'Dinner No'],
-  Responses: ['Time', 'Person', 'Meal', 'Answer'],
+  Meals: [
+    'Logged at',
+    'Lunch Yes', 'Lunch No', 'Lunch Guests', 'Lunch Total',
+    'Dinner Yes', 'Dinner No', 'Dinner Guests', 'Dinner Total',
+    'Day Total',
+  ],
+  Responses: ['Time', 'Person', 'Meal', 'Answer', 'Guests'],
   State: ['key', 'value'],
 };
 
@@ -23,31 +28,47 @@ async function sheets() {
   return client;
 }
 
-/** Create any missing tabs and write their header rows. Safe to call every run. */
+/**
+ * Create any missing tabs, and repair header rows that don't match TABS.
+ * The repair step means adding a column here (like the guest columns) upgrades
+ * an existing sheet automatically instead of silently misaligning data.
+ * Safe to call every run.
+ */
 export async function ensureTabs() {
   const api = await sheets();
   const meta = await api.spreadsheets.get({ spreadsheetId: SHEET_ID });
   const existing = new Set(meta.data.sheets.map((s) => s.properties.title));
 
   const missing = Object.keys(TABS).filter((t) => !existing.has(t));
-  if (missing.length === 0) return;
+  if (missing.length) {
+    await api.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      requestBody: {
+        requests: missing.map((title) => ({ addSheet: { properties: { title } } })),
+      },
+    });
+    console.log(`Created tabs: ${missing.join(', ')}`);
+  }
 
-  await api.spreadsheets.batchUpdate({
-    spreadsheetId: SHEET_ID,
-    requestBody: {
-      requests: missing.map((title) => ({ addSheet: { properties: { title } } })),
-    },
-  });
+  // Write or fix the header row on every tab.
+  for (const [title, headers] of Object.entries(TABS)) {
+    if (!missing.includes(title)) {
+      const current = await api.spreadsheets.values.get({
+        spreadsheetId: SHEET_ID,
+        range: `${title}!1:1`,
+      });
+      const row = (current.data.values && current.data.values[0]) || [];
+      if (row.length === headers.length && row.every((v, i) => v === headers[i])) continue;
+      console.log(`Updating headers on "${title}"`);
+    }
 
-  for (const title of missing) {
     await api.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
       range: `${title}!A1`,
       valueInputOption: 'RAW',
-      requestBody: { values: [TABS[title]] },
+      requestBody: { values: [headers] },
     });
   }
-  console.log(`Created tabs: ${missing.join(', ')}`);
 }
 
 export async function appendRows(tab, rows) {
