@@ -61,6 +61,7 @@ async function main() {
   const dinner = await tallyMessage(state.dinnerMessageId, bot.id);
 
   const now = new Date().toISOString();
+  const dayTotal = lunch.total + dinner.total;
 
   // Daily totals.
   await appendRows('Meals', [
@@ -81,8 +82,6 @@ async function main() {
     ...dinner.no.map((n) => [now, n, 'Dinner', 'No', '']),
     ...dinner.guests.map((g) => [now, g.name, 'Dinner', 'Guest', g.value]),
   ]);
-
-  const dayTotal = lunch.total + dinner.total;
 
   let summary =
     '**Meal count for today**\n' +

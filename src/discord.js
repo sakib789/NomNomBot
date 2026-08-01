@@ -94,6 +94,9 @@ export async function getReactors(messageId, emoji, botId) {
   const users = await call(
     `/channels/${CHANNEL_ID}/messages/${messageId}/reactions/${encodeURIComponent(emoji)}?limit=100`
   );
+  // With 5 emoji across 2 messages that's 10 reads; pace them to avoid 429s.
+  // The retry logic in call() handles any that slip through anyway.
+  await sleep(250);
   return (users || []).filter((u) => u.id !== botId);
 }
 
