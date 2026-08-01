@@ -1,0 +1,28 @@
+name: Tally meal counts
+
+on:
+  schedule:
+    # GitHub Actions cron is ALWAYS UTC. This is 10:00 Singapore time (UTC+8).
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  tally:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run tally
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          PEOPLE_JSON: ${{ vars.PEOPLE_JSON }}

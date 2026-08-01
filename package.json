@@ -1,0 +1,18 @@
+{
+  "name": "meal-planner-discord-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Posts daily lunch/dinner prompts to Discord, tallies reactions, logs to Google Sheets. Runs on GitHub Actions cron.",
+  "scripts": {
+    "post": "node src/post.js",
+    "tally": "node src/tally.js",
+    "check": "node --check src/discord.js && node --check src/sheets.js && node --check src/post.js && node --check src/tally.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "googleapis": "^144.0.0"
+  }
+}
