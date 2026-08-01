@@ -4,7 +4,7 @@ on:
   schedule:
     # GitHub Actions cron is ALWAYS UTC. This is 17:00 Singapore time (UTC+8).
     # Change this if you're in another timezone — see the README for the table.
-    - cron: '0 9 * * *'
+    - cron: '0 13 * * *'    # 19:00 Dhaka
   workflow_dispatch: # lets you run it manually from the Actions tab
 
 jobs:
