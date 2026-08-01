@@ -3,7 +3,7 @@ name: Tally meal counts
 on:
   schedule:
     # GitHub Actions cron is ALWAYS UTC. This is 10:00 Singapore time (UTC+8).
-    - cron: '0 2 * * *'
+    - cron: '30 3 * * *'    # 09:30 Dhaka
   workflow_dispatch:
 
 jobs:
